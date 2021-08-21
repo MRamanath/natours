@@ -3,10 +3,15 @@ import { showAlert } from './alerts'
 
 const updateSettings = async (data, type) => {
 	try {
+		// const url =
+		// 	type === 'password'
+		// 		? `${process.env.APP_URl}/api/v1/users/password/update`
+		// 		: `${process.env.APP_URl}/api/v1/users/update/self`
+
 		const url =
 			type === 'password'
-				? `${process.env.APP_URl}/api/v1/users/password/update`
-				: `${process.env.APP_URl}/api/v1/users/update/self`
+				? '/api/v1/users/password/update'
+				: '/api/v1/users/update/self'
 
 		const result = await axios({ method: 'PATCH', url, data })
 
