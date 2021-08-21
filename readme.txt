@@ -1,0 +1,124 @@
+// https://stackoverflow.blog/2020/03/02/best-practices-for-rest-api-design/
+
+
+// Creating DB
+
+@(shell):1:1
+
+> use natours-test
+switched to db natours-test
+> db.tours.insertOne({ name: "The Forest Hiker", price: 297, rating: 4.7 })
+{
+        "acknowledged" : true,
+        "insertedId" : ObjectId("60c87ef0aaa26cf625c9fe3a")
+}
+> db.tours.find()
+{ "_id" : ObjectId("60c87ef0aaa26cf625c9fe3a"), "name" : "The Forest Hiker", "price" : 297, "rating" : 4.7 }
+> show dbs
+admin         0.000GB
+config        0.000GB
+local         0.000GB
+natours-test  0.000GB
+> use admin
+switched to db admin
+> use natours-test
+switched to db natours-test
+> show collections
+tours
+
+// Creating Documents
+
+> use natours-test
+switched to db natours-test
+> db.tours.find()
+{ "_id" : ObjectId("60c87ef0aaa26cf625c9fe3a"), "name" : "The Forest Hiker", "price" : 297, "rating" : 4.7 }
+> db.tours.insertMany([{ name: "The Sea Explorer", price: 497, rating: 4.8 }, { name: "The Snow Adventurer", price: 997, rating: 4.9, difficulty: "easy" }])
+{
+        "acknowledged" : true,
+        "insertedIds" : [
+                ObjectId("60c881800c1fd66549da4328"),
+                ObjectId("60c881800c1fd66549da4329")
+        ]
+}
+> db.tours.find()
+{ "_id" : ObjectId("60c87ef0aaa26cf625c9fe3a"), "name" : "The Forest Hiker", "price" : 297, "rating" : 4.7 }
+{ "_id" : ObjectId("60c881800c1fd66549da4328"), "name" : "The Sea Explorer", "price" : 497, "rating" : 4.8 }
+{ "_id" : ObjectId("60c881800c1fd66549da4329"), "name" : "The Snow Adventurer", "price" : 997, "rating" : 4.9, "difficulty" : "easy" }
+
+// Reading / Querying Database
+> use natours-test
+switched to db natours-test
+> db.tours.find()
+{ "_id" : ObjectId("60c87ef0aaa26cf625c9fe3a"), "name" : "The Forest Hiker", "price" : 297, "rating" : 4.7 }
+{ "_id" : ObjectId("60c881800c1fd66549da4328"), "name" : "The Sea Explorer", "price" : 497, "rating" : 4.8 }
+{ "_id" : ObjectId("60c881800c1fd66549da4329"), "name" : "The Snow Adventurer", "price" : 997, "rating" : 4.9, "difficulty" : "easy" }
+> db.tours.find({ name: "The Forest Hiker" })
+{ "_id" : ObjectId("60c87ef0aaa26cf625c9fe3a"), "name" : "The Forest Hiker", "price" : 297, "rating" : 4.7 }
+> db.tours.find({ difficulty: "easy" })
+{ "_id" : ObjectId("60c881800c1fd66549da4329"), "name" : "The Snow Adventurer", "price" : 997, "rating" : 4.9, "difficulty" : "easy" }
+> db.tours.find({ price: { $lte: 500 } })
+{ "_id" : ObjectId("60c87ef0aaa26cf625c9fe3a"), "name" : "The Forest Hiker", "price" : 297, "rating" : 4.7 }
+{ "_id" : ObjectId("60c881800c1fd66549da4328"), "name" : "The Sea Explorer", "price" : 497, "rating" : 4.8 }
+> db.tours.find({ price: { $lt: 500 }, rating: { $gte: 4.8 } })
+{ "_id" : ObjectId("60c881800c1fd66549da4328"), "name" : "The Sea Explorer", "price" : 497, "rating" : 4.8 }
+> db.tours.find({ $or: [ { price: { $lt: 500} }, { rating: {$gte: 4.8 } } ] })
+{ "_id" : ObjectId("60c87ef0aaa26cf625c9fe3a"), "name" : "The Forest Hiker", "price" : 297, "rating" : 4.7 }
+{ "_id" : ObjectId("60c881800c1fd66549da4328"), "name" : "The Sea Explorer", "price" : 497, "rating" : 4.8 }
+{ "_id" : ObjectId("60c881800c1fd66549da4329"), "name" : "The Snow Adventurer", "price" : 997, "rating" : 4.9, "difficulty" : "easy" }
+> db.tours.find({ $or: [ { price: { $gt: 500} }, { rating: {$gte: 4.8 } } ] })
+{ "_id" : ObjectId("60c881800c1fd66549da4328"), "name" : "The Sea Explorer", "price" : 497, "rating" : 4.8 }
+{ "_id" : ObjectId("60c881800c1fd66549da4329"), "name" : "The Snow Adventurer", "price" : 997, "rating" : 4.9, "difficulty" : "easy" }
+
+> db.tours.find({ $or: [ { price: { $gt: 500} }, { rating: {$gte: 4.8 } } ] }, { name: 1 })
+{ "_id" : ObjectId("60c881800c1fd66549da4328"), "name" : "The Sea Explorer" }
+{ "_id" : ObjectId("60c881800c1fd66549da4329"), "name" : "The Snow Adventurer" }
+
+// Updating documents
+> db.tours.updateOne({ name: "The Snow Adventurer" }, { $set: { price: 597 } })
+{ "acknowledged" : true, "matchedCount" : 1, "modifiedCount" : 1 }
+> db.tours.find()
+{ "_id" : ObjectId("60c87ef0aaa26cf625c9fe3a"), "name" : "The Forest Hiker", "price" : 297, "rating" : 4.7 }
+{ "_id" : ObjectId("60c881800c1fd66549da4328"), "name" : "The Sea Explorer", "price" : 497, "rating" : 4.8 }
+{ "_id" : ObjectId("60c881800c1fd66549da4329"), "name" : "The Snow Adventurer", "price" : 597, "rating" : 4.9, "difficulty" : "easy" }
+> db.tours.find({ price: {$gt: 500 }, rating: { $gte: 4.8 } })
+{ "_id" : ObjectId("60c881800c1fd66549da4329"), "name" : "The Snow Adventurer", "price" : 597, "rating" : 4.9, "difficulty" : "easy" }
+> db.tours.updateMany({ price: {$gt: 500 }, rating: { $gte: 4.8 } }, { $set: { premium: true } })
+{ "acknowledged" : true, "matchedCount" : 1, "modifiedCount" : 1 }
+> db.tours.find()
+{ "_id" : ObjectId("60c87ef0aaa26cf625c9fe3a"), "name" : "The Forest Hiker", "price" : 297, "rating" : 4.7 }
+{ "_id" : ObjectId("60c881800c1fd66549da4328"), "name" : "The Sea Explorer", "price" : 497, "rating" : 4.8 }
+{ "_id" : ObjectId("60c881800c1fd66549da4329"), "name" : "The Snow Adventurer", "price" : 597, "rating" : 4.9, "difficulty" : "easy", "premium" : true }
+> db.tours.replaceOne({}) // own challenge
+
+
+// Delete documents
+> db.tours.find()
+{ "_id" : ObjectId("60c87ef0aaa26cf625c9fe3a"), "name" : "The Forest Hiker", "price" : 297, "rating" : 4.7 }
+{ "_id" : ObjectId("60c881800c1fd66549da4328"), "name" : "The Sea Explorer", "price" : 497, "rating" : 4.8 }
+{ "_id" : ObjectId("60c881800c1fd66549da4329"), "name" : "The Snow Adventurer", "price" : 597, "rating" : 4.9, "difficulty" : "easy", "premium" : true }
+> db.tours.deleteMany({ rating: { $lt: 4.8 } })
+{ "acknowledged" : true, "deletedCount" : 1 }
+> db.tours.find()
+{ "_id" : ObjectId("60c881800c1fd66549da4328"), "name" : "The Sea Explorer", "price" : 497, "rating" : 4.8 }
+{ "_id" : ObjectId("60c881800c1fd66549da4329"), "name" : "The Snow Adventurer", "price" : 597, "rating" : 4.9, "difficulty" : "easy", "premium" : true }
+> db.tours.deleteMany({}) // delete all 
+
+
+// Connect to mongodb atlas
+C:\Users\Codeclouds-Ramanath>mongo mongodb+srv://cluster0.rkz71.mongodb.net/test --username Ramanath
+MongoDB shell version v4.4.6
+Enter password:
+connecting to: mongodb://cluster0-shard-00-00.rkz71.mongodb.net:27017,cluster0-shard-00-01.rkz71.mongodb.net:27017,cluster0-shard-00-02.rkz71.mongodb.net:27017/test?authSource=admin&compressors=disabled&gssapiServiceName=mongodb&replicaSet=atlas-143o8m-shard-0&ssl=true
+Implicit session: session { "id" : UUID("e6c6e07e-209b-4216-ab4e-bbff0cb410bb") }
+MongoDB server version: 4.4.6
+MongoDB Enterprise atlas-143o8m-shard-0:PRIMARY>
+MongoDB Enterprise atlas-143o8m-shard-0:PRIMARY>
+MongoDB Enterprise atlas-143o8m-shard-0:PRIMARY> show dbs
+admin    0.000GB
+local    6.262GB
+natours  0.000GB
+MongoDB Enterprise atlas-143o8m-shard-0:PRIMARY> use natours
+switched to db natours
+MongoDB Enterprise atlas-143o8m-shard-0:PRIMARY> show collections
+tours
+MongoDB Enterprise atlas-143o8m-shard-0:PRIMARY>
