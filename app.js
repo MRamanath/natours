@@ -17,6 +17,7 @@ const tourRouter = require('./routes/tour.routes')
 const userRouter = require('./routes/user.routes')
 const reviewRouter = require('./routes/review.routes')
 const bookingRouter = require('./routes/booking.routes')
+const bookingController = require('./controllers/bookingController')
 const viewRouter = require('./routes/view.routes')
 
 const app = express()
@@ -139,6 +140,13 @@ const limiter = rateLimit({
 })
 
 app.use('/api', limiter)
+
+// Stripe Webhook Checkout
+app.post(
+	'/webhook-checkout',
+	express.raw({ type: 'application/json' }),
+	bookingController.webhookCheckout
+)
 
 app.use(express.json({ limit: '10kb' }))
 app.use(express.urlencoded({ extended: true, limit: '10kb' }))
