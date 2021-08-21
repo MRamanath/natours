@@ -5,6 +5,9 @@ const authController = require('../controllers/authController')
 
 const router = express.Router()
 
+// Check if any alert query param is there in the url and show alerts
+router.use(viewController.alerts)
+
 router.get('/', authController.isLoggedIn, viewController.getOverview)
 router.get('/tour/:slug', authController.isLoggedIn, viewController.getTour)
 router.get('/login', authController.isLoggedIn, viewController.getLoginForm)
