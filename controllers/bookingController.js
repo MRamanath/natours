@@ -6,6 +6,8 @@ const catchAsync = require('../utils/catchAsync')
 const factory = require('./handlerFactory')
 const AppError = require('../utils/appError')
 
+// https://stripe.com/docs/api/checkout/sessions/create?lang=node
+
 exports.getCheckoutSession = catchAsync(async (req, res, next) => {
 	const { tourId } = req.params
 	const { protocol } = req
