@@ -14,23 +14,18 @@ const signToken = (id) =>
 		expiresIn: process.env.JWT_EXPIRES_IN
 	})
 
-const createSendToken = (user, statusCode, res) => {
+const createSendToken = (user, statusCode, req, res) => {
 	const token = signToken(user._id)
-	const cookieOptions = {
+	res.cookie('jwt', token, {
 		expires: new Date(
 			Date.now() +
 				Number(process.env.JWT_EXPIRES_IN.slice(0, -1)) * 24 * 60 * 60 * 1000
 		), // milliseconds
-		httpOnly: true
-	}
+		httpOnly: true,
+		secure: req.secure || req.headers['x-forwarded-proto'] === 'https'
+	})
 
-	if (process.env.NODE_ENV === 'production') {
-		cookieOptions.secure = true
-	}
-
-	res.cookie('jwt', token, cookieOptions)
 	user.password = undefined
-
 	res.status(statusCode).json({
 		status: 'success',
 		token,
@@ -56,7 +51,7 @@ exports.signUp = catchAsync(async (req, res, next) => {
 	const email = new Email(newUser, url)
 	await email.sendWelcome()
 
-	createSendToken(newUser, 201, res)
+	createSendToken(newUser, 201, req, res)
 })
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -72,7 +67,7 @@ exports.login = catchAsync(async (req, res, next) => {
 		return next(new AppError('Incorrect email or password', 401))
 	}
 
-	createSendToken(user, 200, res)
+	createSendToken(user, 200, req, res)
 })
 
 // Only for rendered pages
@@ -207,7 +202,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 	user.passwordResetTokenExpires = undefined
 	await user.save()
 
-	createSendToken(user, 200, res)
+	createSendToken(user, 200, req, res)
 })
 
 exports.updatePassword = catchAsync(async (req, res, next) => {
@@ -221,5 +216,5 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
 	user.passwordConfirm = req.body.passwordConfirm
 	await user.save()
 
-	createSendToken(user, 200, res)
+	createSendToken(user, 200, req, res)
 })
