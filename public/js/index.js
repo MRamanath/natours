@@ -82,4 +82,5 @@ if (bookTourBtn) {
 const { alert } = document.querySelector('body').dataset
 if (alert) {
 	showAlert('success', alert, 15)
+	window.history.replaceState(null, null, window.location.pathname)
 }
